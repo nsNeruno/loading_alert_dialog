@@ -10,8 +10,7 @@ This package only exposes one method, *__showLoadingDialog__* with similar imple
 ```dart
 showLoadingDialog<int>(
   context: context,
-  builder: (context, key) => Card(
-    key: key,
+  builder: (context) => Card(
     child: Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -41,7 +40,7 @@ showLoadingDialog<int>(
   },
 );
 ```
-The builder may returns any Widget eligible to be used as an "AlertDialog". Also, don't forget to pass the __**key**__ into the Widget. The sample code above shows a simple Card with a Text and CircularProgressIndicator for 3 seconds, then pops out a random number, closing the "AlertDialog", then displaying the popped number into the view.
+The builder may returns any Widget eligible to be used as an "AlertDialog". The sample code above shows a simple Card with a Text and CircularProgressIndicator for 3 seconds, then pops out a random number, closing the "AlertDialog", then displaying the popped number into the view.
 
 ## Cheatsheet
 * __pop__ closes the "AlertDialog" and pops and returns a specific type value.
@@ -79,8 +78,7 @@ class _LoadingAlertDialogExampleState extends State<LoadingAlertDialogExample> {
   void _showAlert() {
     showLoadingDialog<int>(
       context: context,
-      builder: (context, key) => Card(
-        key: key,
+      builder: (context) => Card(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
