@@ -1,3 +1,7 @@
+## [0.0.3]
+
+* Added default WidgetBuilder option
+
 ## [0.0.2+1]
 
 * Updated Documentation
