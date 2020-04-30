@@ -55,7 +55,6 @@ void showLoadingDialog<T>({
   void Function(dynamic error) onError,
   bool isPlatformAware = true,
 }) {
-  assert(builder != null && _defaultLoadingWidgetBuilder != null,);
   // A control flag that prevents multiple call to Navigator.pop
   bool hasPopped = false;
 
