@@ -44,14 +44,18 @@ typedef ErrorPopCallback = void Function(dynamic err);
 /// If [isPlatformAware] is not true, then [showDialog] will be used on iOS
 /// platform.
 ///
+/// [builder] may be omitted if a default [WidgetBuilder] was provided via
+/// [setDefaultLoadingWidget] method
+///
 void showLoadingDialog<T>({
   @required BuildContext context,
-  @required WidgetBuilder builder,
+  WidgetBuilder builder,
   void Function( DialogPopCallback<T> pop, ErrorPopCallback error, ) computation,
   void Function(T result) onPop,
   void Function(dynamic error) onError,
   bool isPlatformAware = true,
 }) {
+  assert(builder != null && _defaultLoadingWidgetBuilder != null,);
   // A control flag that prevents multiple call to Navigator.pop
   bool hasPopped = false;
 
@@ -65,13 +69,13 @@ void showLoadingDialog<T>({
   if (Platform.isIOS && isPlatformAware == true) {
     showCupertinoDialog<T>(
       context: context,
-      builder: builder,
+      builder: builder ?? _defaultLoadingWidgetBuilder,
     ).then(dialogCallback);
   } else {
     showDialog<T>(
       barrierDismissible: false,
       context: context,
-      builder: builder,
+      builder: builder ?? _defaultLoadingWidgetBuilder,
     ).then(dialogCallback);
   }
 
@@ -94,4 +98,22 @@ void showLoadingDialog<T>({
 
     computation(pop, error);
   }
+}
+
+///
+/// To safely omit builder argument, this value needs to be set via
+/// [setDefaultLoadingWidget] method
+///
+WidgetBuilder _defaultLoadingWidgetBuilder;
+
+///
+/// Helper getter to make sure there was a default builder
+///
+bool get hasDefaultLoadingWidget => _defaultLoadingWidgetBuilder != null;
+
+///
+/// Sets the default loading widget to be used
+///
+void setDefaultLoadingWidget({@required WidgetBuilder builder,}) {
+  _defaultLoadingWidgetBuilder = builder;
 }
