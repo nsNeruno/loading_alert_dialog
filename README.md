@@ -4,7 +4,8 @@ Customizable AlertDialog that allows running a computation while blocking the ap
 
 ## Getting Started
 
-This package only exposes one method, *__showLoadingDialog__* with similar implementation of normal *__showDialog__* or *__showCupertinoDialog__*.
+This package exposes one main method, which is *__showLoadingDialog__* with similar implementation of normal *__showDialog__* or *__showCupertinoDialog__*.
+Optionally, calling *__setDefaultLoadingWidget__* allows settings what _Widget_ to display during the Loading phase.
 
 ### How-to-use example:
 ```dart
