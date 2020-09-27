@@ -4,135 +4,43 @@ Customizable AlertDialog that allows running a computation while blocking the ap
 
 ## Getting Started
 
-This package exposes one main method, which is *__showLoadingDialog__* with similar implementation of normal *__showDialog__* or *__showCupertinoDialog__*.
-Optionally, calling *__setDefaultLoadingWidget__* allows settings what _Widget_ to display during the Loading phase.
+This package exposes static methods through one class _**LoadingAlertDialog**_ which are:
+* _**showLoadingAlertDialog**_  
+    The main method that works as a wrapper to _showDialog_/_showCupertinoDialog_, where it is controller through a _**Future**_, provided through _**computation**_ argument. When the provided Future completes, with a result or an error, then the "Dialog" will be dismissed on it's own, and the method call itself will return the value of the computation Future itself or throws if the Future throws.
+* _**setDefaultWidgetBuilder**_  
+    By setting a WidgetBuilder here, each call to showLoadingAlertDialog won't require to provide _**builder**_ argument.
 
 ### How-to-use example:
 ```dart
-showLoadingDialog<int>(
+import 'package:loading_alert_dialog/loading_alert_dialog.dart';
+
+LoadingAlertDialog.showLoadingAlertDialog<int>(
   context: context,
-  builder: (context) => Card(
+  builder: (context,) => Card(
     child: Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(24.0,),
       child: Column(
         children: <Widget>[
           CircularProgressIndicator(),
-          Text("Please wait..."),
+          Text("Please Wait...",),
         ],
         mainAxisSize: MainAxisSize.min,
       ),
     ),
     color: Colors.white,
   ),
-  computation: (pop, err) {
-    Future.delayed(
-      Duration(seconds: 3,), () {
-        final randomNumber = Random().nextInt(100);
-        pop(randomNumber);
-      },
-    );
-  },
-  onPop: (number) {
-    if (number != null) {
-      setState(() {
-        _randomNumber = number;
-      });
-    }
+  computation: Future.delayed(
+    Duration(seconds: 3,), () {
+      final randomNumber = Random().nextInt(300,);
+      return randomNumber;
+    },
+  ),
+).then((number) {
+  if (number != null) {
+    setState(() {
+      _randomNumber = number;
+	}
   },
 );
 ```
 The builder may returns any Widget eligible to be used as an "AlertDialog". The sample code above shows a simple Card with a Text and CircularProgressIndicator for 3 seconds, then pops out a random number, closing the "AlertDialog", then displaying the popped number into the view.
-
-## Cheatsheet
-* __pop__ closes the "AlertDialog" and pops and returns a specific type value.
-* __err__ closes the "AlertDialog" and pops NOTHING and returns an optional, any kind of value, indicating there is an error.
-* Omitting the __computation__ parameter or not calling any of __pop__ or __err__ will cause the "AlertDialog" to be shown indefinitely.
-
-## Full Example Code
-```dart
-void main() {
-  runApp(
-    LoadingAlertDialogExampleApp(),
-  );
-}
-
-class LoadingAlertDialogExampleApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-
-    return MaterialApp(
-      color: Colors.blue,
-      home: LoadingAlertDialogExample(),
-    );
-  }
-}
-
-class LoadingAlertDialogExample extends StatefulWidget {
-  @override
-  _LoadingAlertDialogExampleState createState() => _LoadingAlertDialogExampleState();
-}
-
-class _LoadingAlertDialogExampleState extends State<LoadingAlertDialogExample> {
-
-  int _randomNumber = 0;
-
-  void _showAlert() {
-    showLoadingDialog<int>(
-      context: context,
-      builder: (context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: <Widget>[
-              CircularProgressIndicator(),
-              Text("Please wait..."),
-            ],
-            mainAxisSize: MainAxisSize.min,
-          ),
-        ),
-        color: Colors.white,
-      ),
-      computation: (pop, err) {
-        Future.delayed(
-          Duration(seconds: 3,), () {
-            final randomNumber = Random().nextInt(100);
-            pop(randomNumber);
-          },
-        );
-      },
-      onPop: (number) {
-        if (number != null) {
-          setState(() {
-            _randomNumber = number;
-          });
-        }
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Loading Alert Dialog Example"),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: <Widget>[
-              Text("Random Number: $_randomNumber"),
-              RaisedButton(
-                child: Text("Show Alert"),
-                onPressed: _showAlert,
-              ),
-            ],
-            mainAxisSize: MainAxisSize.min,
-          ),
-        ),
-      ),
-    );
-  }
-}
-```

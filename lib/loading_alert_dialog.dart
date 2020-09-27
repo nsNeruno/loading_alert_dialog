@@ -1,118 +1,114 @@
-library loading_alert_dialog;
-
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-///
-/// Signature for callback that indicates the computation has completed and the
-/// dialog should pop with a result.
-///
-typedef DialogPopCallback<T> = void Function(T result);
+@immutable
+abstract class LoadingAlertDialog {
 
-///
-/// Signature for callback that indicates an error happened and the dialog
-/// should pop with nothing, and fires an additional callback with optional
-/// error object.
-///
-typedef ErrorPopCallback = void Function(dynamic err);
+  ///
+  /// Currently, this plugin is intended to run only on Mobile Apps (Android/iOS)
+  ///
+  static const UNSUPPORTED_PLATFORM = "UNSUPPORTED_PLATFORM";
 
-///
-/// Displays a platform aware dialog that either calls [showCupertinoDialog]
-/// or [showDialog] depending on current [Platform], and runs indefinitely,
-/// while showing a [Widget].
-///
-/// Takes a [BuildContext] as primary requirements for common dialog showing
-/// methods.
-///
-/// During the [computation], the [DialogPopCallback] and [ErrorPopCallback] are
-/// provided to control when to pop the dialog and what should be popped from
-/// the dialog. Calling [DialogPopCallback] will pop the dialog and send the
-/// result back to be processed within [onPop] callback if provided, while
-/// calling [ErrorPopCallback] will pop the dialog, send nothing, and fire
-/// additional callback to handle optional error object within [onError]
-/// callback.
-///
-/// Calling [ErrorPopCallback] also triggers [onPop] callback with a null
-/// value if provided.
-///
-/// Omitting the [computation] parameter will cause the displayed dialog to
-/// run indefinitely.
-///
-/// If [isPlatformAware] is not true, then [showDialog] will be used on iOS
-/// platform.
-///
-/// [builder] may be omitted if a default [WidgetBuilder] was provided via
-/// [setDefaultLoadingWidget] method
-///
-void showLoadingDialog<T>({
-  @required BuildContext context,
-  WidgetBuilder builder,
-  void Function( DialogPopCallback<T> pop, ErrorPopCallback error, ) computation,
-  void Function(T result) onPop,
-  void Function(dynamic error) onError,
-  bool isPlatformAware = true,
-}) {
-  // A control flag that prevents multiple call to Navigator.pop
-  bool hasPopped = false;
+  ///
+  /// --Defaults to null--
+  ///
+  /// This property will be accessed within [showLoadingAlertDialog]
+  /// implementation when [computation] argument is not provided.
+  ///
+  static WidgetBuilder _defaultWidgetBuilder;
 
-  // Handles Dialog result
-  final Function dialogCallback = (T result) {
-    if (onPop != null) {
-      onPop(result);
+  ///
+  /// By assigning a Default [WidgetBuilder] here, each call to
+  /// [showLoadingAlertDialog] won't require [computation] argument to be
+  /// provided.
+  ///
+  /// Null argument is ignored.
+  ///
+  static void setDefaultWidgetBuilder(WidgetBuilder builder,) {
+    if (builder != null) {
+      _defaultWidgetBuilder = builder;
     }
-  };
-
-  if (Platform.isIOS && isPlatformAware == true) {
-    showCupertinoDialog<T>(
-      context: context,
-      builder: builder ?? _defaultLoadingWidgetBuilder,
-    ).then(dialogCallback);
-  } else {
-    showDialog<T>(
-      barrierDismissible: false,
-      context: context,
-      builder: builder ?? _defaultLoadingWidgetBuilder,
-    ).then(dialogCallback);
   }
 
-  if (computation != null) {
-    // Checking hasPopped flag ensures only one Navigator.pop event
-    final Function pop = (T result) {
-      if (hasPopped) { return; }
-      Navigator.of(context).pop(result);
-      hasPopped = true;
+  ///
+  /// Wrapper for a call to [showDialog] on Android or [showCupertinoDialog] on
+  /// iOS, controlled by the [computation] argument, which is a [Future].
+  ///
+  /// This method's workflow are described below:
+  /// 1. Shows the Dialog
+  /// 2. Runs the computation
+  /// 2. When the computation finishes, close the Dialog
+  ///
+  /// This method returns a distinct [Future] instance which completes with the
+  /// result/error from the original provided [Future] from the [computation]
+  /// argument.
+  ///
+  /// If [builder] argument is null, the Dialog defaults to result from
+  /// [_defaultWidgetBuilder] return value, or an empty [Container] if both are
+  /// not provided.
+  ///
+  static Future<T> showLoadingAlertDialog<T>({
+    @required BuildContext context,
+    @required Future<T> computation,
+    WidgetBuilder builder,
+  }) {
+    final Completer<T> completer = Completer<T>();
+
+    final WidgetBuilder builderWrapper = (context) {
+      computation.then((value) {
+        if (Navigator.of(context,).canPop()) {
+          Navigator.of(context,).pop();
+        }
+        if (Platform.isIOS) {
+          Future.delayed( Duration(milliseconds: 50,), () {
+            completer.complete(value,);
+          },);
+        } else {
+          completer.complete(value,);
+        }
+      },).catchError((e,) {
+        if (Navigator.of(context,).canPop()) {
+          Navigator.of(context,).pop();
+        }
+        if (Platform.isIOS) {
+          Future.delayed( Duration(milliseconds: 50,), () {
+            completer.completeError(e,);
+          },);
+        } else {
+          completer.completeError(e,);
+        }
+      },);
+      return WillPopScope(
+        onWillPop: () async => false,
+        child: Builder(
+          builder: (context) => builder?.call(context,) ?? _defaultWidgetBuilder?.call(context,) ?? Container(),
+        ),
+      );
     };
 
-    final Function error = (err) {
-      if (hasPopped) { return; }
-      Navigator.of(context).pop();
-      hasPopped = true;
-      if (onError != null) {
-        onError(err);
-      }
-    };
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return Builder(
+            builder: builderWrapper,
+          );
+        },
+      );
+    } else if (Platform.isAndroid) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: builderWrapper,
+      );
+    } else {
+      completer.completeError(UnsupportedError(UNSUPPORTED_PLATFORM,),);
+    }
 
-    computation(pop, error);
+    return completer.future;
   }
-}
-
-///
-/// To safely omit builder argument, this value needs to be set via
-/// [setDefaultLoadingWidget] method
-///
-WidgetBuilder _defaultLoadingWidgetBuilder;
-
-///
-/// Helper getter to make sure there was a default builder
-///
-bool get hasDefaultLoadingWidget => _defaultLoadingWidgetBuilder != null;
-
-///
-/// Sets the default loading widget to be used
-///
-void setDefaultLoadingWidget({@required WidgetBuilder builder,}) {
-  _defaultLoadingWidgetBuilder = builder;
 }

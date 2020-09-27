@@ -31,10 +31,9 @@ class _LoadingAlertDialogExampleState extends State<LoadingAlertDialogExample> {
   int _randomNumber = 0;
 
   void _showAlert() {
-    showLoadingDialog<int>(
+    LoadingAlertDialog.showLoadingAlertDialog(
       context: context,
-      builder: (context, key) => Card(
-        key: key,
+      builder: (context,) => Card(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -47,22 +46,19 @@ class _LoadingAlertDialogExampleState extends State<LoadingAlertDialogExample> {
         ),
         color: Colors.white,
       ),
-      computation: (pop, err) {
-        Future.delayed(
-          Duration(seconds: 3,), () {
-            final randomNumber = Random().nextInt(100);
-            pop(randomNumber);
-          },
-        );
-      },
-      onPop: (number) {
-        if (number != null) {
-          setState(() {
-            _randomNumber = number;
-          });
-        }
-      },
-    );
+      computation: Future.delayed(
+        Duration(seconds: 3,), () {
+          final randomNumber = Random().nextInt(100);
+          return randomNumber;
+        },
+      ),
+    ).then((number) {
+      if (number != null) {
+        setState(() {
+          _randomNumber = number;
+        });
+      }
+    },);
   }
 
   @override
