@@ -1,3 +1,7 @@
+## [1.0.0]
+
+** Added null-safety support
+
 ## [0.1.0]
 
 * **\[BREAKING CHANGES\]**: Whole code has been rewritten, and no longer utilizing callback style. Please provide a Future into the _computation_ argument.

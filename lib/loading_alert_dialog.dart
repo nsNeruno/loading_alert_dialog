@@ -19,7 +19,7 @@ abstract class LoadingAlertDialog {
   /// This property will be accessed within [showLoadingAlertDialog]
   /// implementation when [computation] argument is not provided.
   ///
-  static WidgetBuilder _defaultWidgetBuilder;
+  static WidgetBuilder? _defaultWidgetBuilder;
 
   ///
   /// By assigning a Default [WidgetBuilder] here, each call to
@@ -29,9 +29,7 @@ abstract class LoadingAlertDialog {
   /// Null argument is ignored.
   ///
   static void setDefaultWidgetBuilder(WidgetBuilder builder,) {
-    if (builder != null) {
-      _defaultWidgetBuilder = builder;
-    }
+    _defaultWidgetBuilder = builder;
   }
 
   ///
@@ -51,17 +49,18 @@ abstract class LoadingAlertDialog {
   /// [_defaultWidgetBuilder] return value, or an empty [Container] if both are
   /// not provided.
   ///
-  static Future<T> showLoadingAlertDialog<T>({
-    @required BuildContext context,
-    @required Future<T> computation,
-    WidgetBuilder builder,
+  static Future<T?> showLoadingAlertDialog<T>({
+    required BuildContext context,
+    required Future<T> computation,
+    WidgetBuilder? builder,
   }) {
-    final Completer<T> completer = Completer<T>();
+    final Completer<T?> completer = Completer<T?>();
 
     final WidgetBuilder builderWrapper = (context) {
       computation.then((value) {
-        if (Navigator.of(context,).canPop()) {
-          Navigator.of(context,).pop();
+        final navigator = Navigator.of(context,);
+        if (navigator.canPop()) {
+          navigator.pop();
         }
         if (Platform.isIOS) {
           Future.delayed( Duration(milliseconds: 50,), () {
@@ -71,8 +70,9 @@ abstract class LoadingAlertDialog {
           completer.complete(value,);
         }
       },).catchError((e,) {
-        if (Navigator.of(context,).canPop()) {
-          Navigator.of(context,).pop();
+        final navigator = Navigator.of(context,);
+        if (navigator.canPop()) {
+          navigator.pop();
         }
         if (Platform.isIOS) {
           Future.delayed( Duration(milliseconds: 50,), () {

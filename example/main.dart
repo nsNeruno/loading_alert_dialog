@@ -31,7 +31,7 @@ class _LoadingAlertDialogExampleState extends State<LoadingAlertDialogExample> {
   int _randomNumber = 0;
 
   void _showAlert() {
-    LoadingAlertDialog.showLoadingAlertDialog(
+    LoadingAlertDialog.showLoadingAlertDialog<int>(
       context: context,
       builder: (context,) => Card(
         child: Padding(
@@ -74,7 +74,7 @@ class _LoadingAlertDialogExampleState extends State<LoadingAlertDialogExample> {
           child: Column(
             children: <Widget>[
               Text("Random Number: $_randomNumber"),
-              RaisedButton(
+              ElevatedButton(
                 child: Text("Show Alert"),
                 onPressed: _showAlert,
               ),
