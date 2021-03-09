@@ -1,6 +1,6 @@
 name: loading_alert_dialog
 description: Customizable Alert Dialog that allows running a computation while blocking the app like a normal showDialog.
-version: 1.0.0
+version: 1.0.0+2
 homepage: https://github.com/nsNeruno/loading_alert_dialog
 
 environment:
