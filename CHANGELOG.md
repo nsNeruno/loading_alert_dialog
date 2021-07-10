@@ -1,3 +1,7 @@
+## [1.1.0]
+
+* Added proper check for completed Completer (to address random doubled requests on iOS)
+
 ## [1.0.0+2]
 
 * Fixed Markdown typo on CHANGELOG.md

@@ -58,27 +58,33 @@ abstract class LoadingAlertDialog {
 
     final WidgetBuilder builderWrapper = (context) {
       computation.then((value) {
-        final navigator = Navigator.of(context,);
-        if (navigator.canPop()) {
+        final overlayContext = Navigator.of(context,).overlay?.context;
+        if (overlayContext == null) {
+          if (!completer.isCompleted) {
+            completer.complete(value,);
+          }
+          return;
+        }
+        final navigator = Navigator.of(overlayContext,);
+        if (!completer.isCompleted && navigator.canPop()) {
           navigator.pop();
         }
-        if (Platform.isIOS) {
-          Future.delayed( Duration(milliseconds: 50,), () {
-            completer.complete(value,);
-          },);
-        } else {
+        if (!completer.isCompleted) {
           completer.complete(value,);
         }
       },).catchError((e,) {
+        final overlayContext = Navigator.of(context,).overlay?.context;
+        if (overlayContext == null) {
+          if (!completer.isCompleted) {
+            completer.completeError(e,);
+          }
+          return;
+        }
         final navigator = Navigator.of(context,);
-        if (navigator.canPop()) {
+        if (!completer.isCompleted && navigator.canPop()) {
           navigator.pop();
         }
-        if (Platform.isIOS) {
-          Future.delayed( Duration(milliseconds: 50,), () {
-            completer.completeError(e,);
-          },);
-        } else {
+        if (!completer.isCompleted) {
           completer.completeError(e,);
         }
       },);
