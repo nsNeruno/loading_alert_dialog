@@ -1,4 +1,4 @@
-# loading_alert_dialog
+# loading_alert_dialog [![Pub](https://img.shields.io/pub/v/loading_alert_dialog.svg)](https://pub.dartlang.org/packages/loading_alert_dialog)
 
 Customizable AlertDialog that allows running a computation while blocking the app like a normal showDialog without using the approach of using a [Stack](https://api.flutter.dev/flutter/widgets/Stack-class.html)/[Overlay](https://api.flutter.dev/flutter/widgets/Overlay-class.html) widget.
 
